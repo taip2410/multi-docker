@@ -1,0 +1,22 @@
+sudo: required
+services:
+  - dcoker
+
+before_install:
+  - docker build -t taip2410/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run taip2410/react-test npm test -- --coverage
+
+after_success:
+  - docker build -t taip2410/multi-client ./client
+  - docker build -t taip2410/multi-nginx ./nginx
+  - docker build -t taip2410/multi-server ./server
+  - docker build -t taip2410/multi-worker ./worker
+  #Take those images and push them to docker hub
+
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  - docker push taip2410/multi-client
+  - docker push taip2410/multi-nginx
+  - docker push taip2410/multi-server
+  - docker push taip2410/multi-worker
